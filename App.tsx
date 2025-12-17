@@ -1,9 +1,9 @@
 
-import React, { useState, useRef, useCallback } from 'react';
-import { geminiService } from './services/geminiService';
-import { PRESET_FILTERS } from './constants';
-import { ImageState } from './types';
-import Button from './components/Button';
+import React, { useState, useRef } from 'react';
+import { geminiService } from './services/geminiService.ts';
+import { PRESET_FILTERS } from './constants.tsx';
+import { ImageState } from './types.ts';
+import Button from './components/Button.tsx';
 
 const App: React.FC = () => {
   const [imageState, setImageState] = useState<ImageState>({
@@ -54,7 +54,7 @@ const App: React.FC = () => {
       setPrompt('');
     } catch (err: any) {
       console.error("Edit failed:", err);
-      setError("Si è verificato un errore durante la modifica dell'immagine. Riprova.");
+      setError(err.message || "Si è verificato un errore durante la modifica.");
     } finally {
       setIsProcessing(false);
     }
@@ -93,16 +93,14 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950">
-      {/* Header */}
-      <header className="h-16 flex items-center justify-between px-6 border-b border-slate-800 bg-slate-900/50 sticky top-0 z-50">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+      <header className="h-16 flex items-center justify-between px-6 border-b border-slate-800 bg-slate-900/50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-xl">V</div>
-          <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">V</div>
+          <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
             VisionEdit AI
           </h1>
         </div>
-        
         {imageState.current && (
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={handleUndo} disabled={imageState.history.length <= 1}>
@@ -115,17 +113,16 @@ const App: React.FC = () => {
         )}
       </header>
 
-      <main className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-64px)] overflow-hidden">
-        {/* Sidebar */}
-        <aside className="w-full lg:w-80 border-r border-slate-800 bg-slate-900/30 overflow-y-auto custom-scrollbar p-6 space-y-8 order-2 lg:order-1">
+      <main className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-64px)]">
+        <aside className="w-full lg:w-80 border-r border-slate-800 bg-slate-900/20 p-6 space-y-6">
           <div>
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Comandi AI</h2>
+            <h2 className="text-xs font-bold text-slate-500 uppercase mb-4 tracking-widest">Editor AI</h2>
             <div className="space-y-4">
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Es: Aggiungi degli occhiali da sole o cambia lo sfondo in una foresta..."
-                className="w-full h-32 bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all placeholder:text-slate-500"
+                placeholder="Cosa vuoi cambiare?"
+                className="w-full h-32 bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
               <Button 
                 className="w-full" 
@@ -133,23 +130,23 @@ const App: React.FC = () => {
                 isLoading={isProcessing}
                 disabled={!prompt.trim() || !imageState.current}
               >
-                Applica Modifica
+                Applica
               </Button>
             </div>
           </div>
 
           <div>
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Filtri Rapidi</h2>
-            <div className="grid grid-cols-2 gap-3">
+            <h2 className="text-xs font-bold text-slate-500 uppercase mb-4 tracking-widest">Presets</h2>
+            <div className="grid grid-cols-2 gap-2">
               {PRESET_FILTERS.map(filter => (
                 <button
                   key={filter.id}
                   onClick={() => processEdit(filter.prompt)}
                   disabled={!imageState.current || isProcessing}
-                  className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-800/40 border border-slate-700 hover:bg-slate-700/60 hover:border-slate-500 transition-all group disabled:opacity-50 disabled:hover:bg-slate-800/40"
+                  className="p-3 rounded-lg bg-slate-800/40 border border-slate-700 hover:bg-slate-700 transition-colors text-center disabled:opacity-30"
                 >
-                  <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">{filter.icon}</span>
-                  <span className="text-xs font-medium text-slate-300">{filter.label}</span>
+                  <div className="text-xl mb-1">{filter.icon}</div>
+                  <div className="text-[10px] font-medium uppercase tracking-tighter">{filter.label}</div>
                 </button>
               ))}
             </div>
@@ -157,71 +154,52 @@ const App: React.FC = () => {
 
           {imageState.current && (
             <div className="pt-4 border-t border-slate-800">
-              <Button variant="outline" className="w-full text-red-400 hover:text-red-300" onClick={resetAll}>
-                Nuova Immagine
+              <Button variant="outline" className="w-full border-red-900/50 text-red-400 hover:bg-red-900/20" onClick={resetAll}>
+                Rimuovi Immagine
               </Button>
             </div>
           )}
         </aside>
 
-        {/* Workspace */}
-        <section className="flex-1 bg-slate-950 flex flex-col items-center justify-center p-4 lg:p-12 overflow-hidden order-1 lg:order-2">
+        <section className="flex-1 bg-slate-950 flex items-center justify-center p-4 relative">
           {!imageState.current ? (
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="max-w-xl w-full aspect-square border-2 border-dashed border-slate-700 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-blue-500 hover:bg-blue-500/5 transition-all group"
+              className="max-w-md w-full aspect-square border-2 border-dashed border-slate-700 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-blue-500 transition-all"
             >
-              <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-blue-400 group-hover:bg-blue-500/10 transition-all">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
+                <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 4v16m8-8H4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <div className="text-center">
-                <p className="text-lg font-medium text-slate-200">Carica una foto per iniziare</p>
-                <p className="text-sm text-slate-500 mt-1">Trascina un file o clicca per sfogliare</p>
-              </div>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                accept="image/*" 
-                onChange={handleFileUpload}
-              />
+              <p className="text-slate-400 font-medium">Carica una foto</p>
+              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload}/>
             </div>
           ) : (
-            <div className="relative w-full h-full flex items-center justify-center group">
-              <div className="relative max-w-full max-h-full rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-slate-800">
-                <img 
-                  src={imageState.current} 
-                  alt="Current preview" 
-                  className={`max-w-full max-h-full object-contain transition-opacity duration-500 ${isProcessing ? 'opacity-50 blur-sm' : 'opacity-100'}`}
-                />
-                
-                {isProcessing && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20">
-                    <div className="p-6 glass-panel rounded-2xl flex flex-col items-center gap-4">
-                      <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
-                      <p className="text-sm font-medium animate-pulse text-blue-400 tracking-wide uppercase">Elaborazione AI...</p>
-                    </div>
+            <div className="relative max-w-full max-h-full flex items-center justify-center p-4">
+              <img 
+                src={imageState.current} 
+                alt="Preview" 
+                className={`max-w-full max-h-[80vh] rounded-lg shadow-2xl transition-all duration-300 ${isProcessing ? 'blur-sm opacity-50 scale-95' : 'opacity-100 scale-100'}`}
+              />
+              {isProcessing && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-slate-900/80 px-6 py-4 rounded-2xl border border-blue-500/50 flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-xs font-bold text-blue-400 tracking-widest uppercase animate-pulse">L'AI sta creando...</span>
                   </div>
-                )}
-              </div>
-
-              {error && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-900/80 border border-red-500 text-red-200 text-sm rounded-lg backdrop-blur-md">
-                  {error}
                 </div>
               )}
             </div>
           )}
+
+          {error && (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-900 text-red-100 text-xs font-bold rounded-full border border-red-500 animate-bounce">
+              {error}
+            </div>
+          )}
         </section>
       </main>
-
-      {/* Footer Info */}
-      <footer className="h-8 px-6 flex items-center justify-between text-[10px] text-slate-500 border-t border-slate-900 bg-slate-950">
-        <div>Modifica Immagini con Gemini 2.5 Flash Image</div>
-        <div>Made with ❤️ by VisionEdit</div>
-      </footer>
     </div>
   );
 };

@@ -1,18 +1,19 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { EditRequest } from "../types";
+import { EditRequest } from "../types.ts";
 
 export class GeminiService {
-  private ai: GoogleGenAI;
-
-  constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-  }
-
   async editImage({ image, prompt, mimeType }: EditRequest): Promise<string> {
+    // Inizializza l'istanza al momento della chiamata per usare la chiave più recente
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+      throw new Error("API Key non trovata. Controlla la configurazione.");
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
     const base64Data = image.split(',')[1];
     
-    const response = await this.ai.models.generateContent({
+    const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: {
         parts: [
@@ -33,7 +34,8 @@ export class GeminiService {
       throw new Error("Nessuna risposta generata dall'AI.");
     }
 
-    for (const part of response.candidates[0].content.parts) {
+    const parts = response.candidates[0].content.parts;
+    for (const part of parts) {
       if (part.inlineData) {
         return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
       }
