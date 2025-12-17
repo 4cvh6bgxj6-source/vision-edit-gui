@@ -1,0 +1,5 @@
+{
+  "name": "VisionEdit AI",
+  "description": "Una potente applicazione di fotoritocco basata su intelligenza artificiale che permette di modificare le immagini usando il linguaggio naturale grazie a Google Gemini.",
+  "requestFramePermissions": []
+}
